@@ -26,7 +26,12 @@ module.exports = (sequelize) => {
       },
       password: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true, // ✅ Ahora permite null
+      },
+      auth0_id: {
+        type: DataTypes.STRING,
+        unique: true,
+        allowNull: false, // ✅ Requerido si viene de Auth0
       },
       role: {
         type: DataTypes.ENUM("admin", "provider", "client"),

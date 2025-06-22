@@ -2,6 +2,60 @@ const { User, Provider } = require("../db.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+
+const createUser = async (req, res, next) => {
+  console.log(
+    "///////////////////////////////Create User///////////////////////////"
+  );
+  // // // 1. // // //
+  const {
+    first_name,
+    last_name,
+    gender,
+    email,
+    delivery_address,
+    mobile,
+    role_id,
+    //user_password,
+  } = req.body;
+
+  if (
+    !first_name ||
+    !last_name ||
+    !email ||
+    first_name === "" ||
+    last_name === "" ||
+    email === ""
+  )
+    return res.status(400).send({ message: "fields can not be empty" });
+
+  try {
+    // Crear el nuevo usuario
+    const userCreated = await User.create({
+      first_name,
+      last_name,
+      gender,
+      email,
+      delivery_address,
+      mobile,
+      role_id,
+      //user_password,
+      auth0_id: "1", //decoded_auth0_user.sub,
+    });
+
+    console.log("User creado correctamente:", userCreated);
+
+    res.status(200).json({
+      message: "User created",
+      userID: userCreated.id,
+    });
+  } catch (error) {
+    console.log(error);
+    next(error);
+    return res.status(500).json({ message: error });
+  }
+};
+
 // Registro de usuario
 const registerUser = async (req, res) => {
   try {
@@ -157,6 +211,7 @@ const updateUserProfile = async (req, res) => {
 
 module.exports = {
   registerUser,
+  createUser,
   loginUser,
   getUserProfile,
   updateUserProfile,
