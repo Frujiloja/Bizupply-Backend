@@ -1,7 +1,41 @@
-const { User, Provider } = require("../db.js");
+const { User, Provider, Rating } = require("../db.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await User.findAll({
+      where: { status: "true" },
+    });
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getUserByEmail = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: "Falta el email" });
+  }
+
+  try {
+    const user = await User.findOne({
+      where: { email: email.toLowerCase() }
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error al buscar el usuario:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
 
 const createUser = async (req, res, next) => {
   console.log(
@@ -215,4 +249,6 @@ module.exports = {
   loginUser,
   getUserProfile,
   updateUserProfile,
+  getUserByEmail,
+  getAllUsers,
 };

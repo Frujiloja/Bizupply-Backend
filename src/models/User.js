@@ -24,10 +24,6 @@ module.exports = (sequelize) => {
         allowNull: false,
         validate: { isEmail: true },
       },
-      password: {
-        type: DataTypes.STRING,
-        allowNull: true, // ✅ Ahora permite null
-      },
       auth0_id: {
         type: DataTypes.STRING,
         unique: true,

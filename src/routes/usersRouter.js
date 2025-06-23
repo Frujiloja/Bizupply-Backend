@@ -5,10 +5,14 @@ const {
   getUserProfile,
   updateUserProfile,
   createUser,
+  getUserByEmail,
+  getAllUsers
 } = require("../controllers/userControllers.js");
 
 const router = Router();
 
+router.get("/", getAllUsers);
+router.post("/mail", getUserByEmail);
 router.post("/create", createUser);
 router.post("/register", registerUser);
 router.post("/login", loginUser);

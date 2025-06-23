@@ -6,7 +6,7 @@ require("dotenv").config();
 const { PORT } = process.env;
 
 // Sincronizar modelos con la base de datos
-conn.sync({ force: true }).then(async () => {
+conn.sync({ force: false }).then(async () => {
   // force: true para crear las tablas (cambiar a false después de la primera vez)
   server.listen(PORT, async () => {
     console.log(`🚀 BizSupply Backend corriendo en puerto ${PORT}`);
