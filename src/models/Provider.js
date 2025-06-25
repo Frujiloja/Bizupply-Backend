@@ -36,8 +36,8 @@ module.exports = (sequelize) => {
         allowNull: false,
       },
       categories: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
-        defaultValue: [],
+        type: DataTypes.STRING,
+        defaultValue: "",
       },
       images: {
         type: DataTypes.ARRAY(DataTypes.STRING),
