@@ -48,9 +48,6 @@ module.exports = (sequelize) => {
       address: {
         type: DataTypes.STRING,
       },
-      company_name: {
-        type: DataTypes.STRING,
-      },
       provider_id: {
         type: DataTypes.INTEGER,
         references: {

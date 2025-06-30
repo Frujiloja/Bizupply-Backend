@@ -47,8 +47,8 @@ const createUser = async (req, res, next) => {
     last_name,
     gender,
     email,
-    delivery_address,
-    mobile,
+    address,
+    phone,
     role_id,
     //user_password,
   } = req.body;
@@ -70,11 +70,11 @@ const createUser = async (req, res, next) => {
       last_name,
       gender,
       email,
-      delivery_address,
-      mobile,
+      address,
+      phone,
       role_id,
       //user_password,
-      auth0_id: "1", //decoded_auth0_user.sub,
+      auth0_id: req.body.auth0_id,
     });
 
     console.log("User creado correctamente:", userCreated);
@@ -230,15 +230,20 @@ const getUserProfile = async (req, res) => {
 const updateUserProfile = async (req, res) => {
   try {
     const { id } = req.params;
+    console.log("ID recibido en params:", id);
     const user = await User.findByPk(id);
+    console.log("Resultado de findByPk:", user);
 
     if (!user) {
+      console.log("No se encontró el usuario con ese ID");
       return res.status(404).json({ error: "Usuario no encontrado" });
     }
 
+    console.log("Body recibido para update:", req.body);
     await user.update(req.body);
     res.json(user);
   } catch (error) {
+    console.error("Error en updateUserProfile:", error);
     res.status(500).json({ error: error.message });
   }
 };
