@@ -13,9 +13,12 @@ const createPlanPayment = async (req, res) => {
   const { providerId, planType, userId } = req.body;
   
   try {
+    console.log("Datos recibidos:", { providerId, planType, userId });
+    
     // Verificar si el proveedor existe
     const provider = await Provider.findByPk(providerId);
     if (!provider) {
+      console.log("Proveedor no encontrado:", providerId);
       return res.status(404).json({ message: "Proveedor no encontrado" });
     }
 
@@ -38,6 +41,12 @@ const createPlanPayment = async (req, res) => {
       });
     }
 
+    // Verificar que tenemos las variables de entorno necesarias
+    if (!process.env.MERCADOPAGO_ACCESS_TOKEN) {
+      console.error("MERCADOPAGO_ACCESS_TOKEN no configurado");
+      return res.status(500).json({ message: "Error de configuración de MercadoPago" });
+    }
+
     const preference = {
       items: [
         {
@@ -48,30 +57,36 @@ const createPlanPayment = async (req, res) => {
         },
       ],
       back_urls: {
-        success: `${process.env.FRONTEND_URL}/payment/success`,
-        failure: `${process.env.FRONTEND_URL}/payment/failure`,
-        pending: `${process.env.FRONTEND_URL}/payment/pending`,
+        success: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/success`,
+        failure: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/failure`,
+        pending: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/payment/pending`,
       },
       auto_return: "approved",
       binary_mode: true,
-      notification_url: `${process.env.BACKEND_URL}/api/payments/notification`,
-      external_reference: `${providerId}-${planType}-${userId}`,
+      notification_url: `${process.env.BACKEND_URL || 'http://localhost:3001'}/api/payments/notification`,
+      external_reference: `${providerId}-${planType}-${userId || 'anonymous'}`,
     };
+
+    console.log("Creando preferencia en MercadoPago:", preference);
 
     // Crear preferencia en MercadoPago
     const response = await mercadopago.preferences.create(preference);
     const { id, init_point } = response.body;
 
+    console.log("Preferencia creada:", { id, init_point });
+
     // Crear registro de pago en la base de datos
     const newPayment = await Payment.create({
       provider_id: providerId,
-      user_id: userId,
+      user_id: userId || 1, // Usar 1 como default si no hay userId
       plan_type: planType,
       amount: planPrice,
       mp_preference_id: id,
       status: 'pending',
       payment_date: new Date(),
     });
+
+    console.log("Pago creado en BD:", newPayment.id);
 
     return res.status(200).json({ 
       message: "Pago creado", 
@@ -80,7 +95,10 @@ const createPlanPayment = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creando pago:", error);
-    return res.status(500).json({ message: "Error creando pago" });
+    return res.status(500).json({ 
+      message: "Error creando pago",
+      error: error.message 
+    });
   }
 };
 
@@ -89,8 +107,12 @@ const paymentNotification = async (req, res) => {
   const { data } = req.query;
 
   try {
+    console.log("Notificación recibida:", req.query);
+    
     if (req.query.type === "payment") {
       const paymentData = await mercadopago.payment.findById(data.id);
+      
+      console.log("Estado del pago:", paymentData.body.status);
       
       if (paymentData.body.status === "approved") {
         // Buscar el pago en nuestra base de datos
@@ -111,6 +133,8 @@ const paymentNotification = async (req, res) => {
             { plan: payment.plan_type },
             { where: { id: payment.provider_id } }
           );
+
+          console.log("Pago aprobado y proveedor actualizado");
         }
       } else if (paymentData.body.status === "rejected") {
         // Actualizar pago como rechazado

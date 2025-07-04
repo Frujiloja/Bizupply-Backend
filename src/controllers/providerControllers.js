@@ -1,4 +1,5 @@
 const { Provider, User, Rating } = require("../db.js");
+const { Op } = require("sequelize");
 
 // Obtener todos los proveedores
 const getAllProviders = async (req, res) => {
@@ -52,22 +53,38 @@ const createProvider = async (req, res) => {
       email,
       phone,
       website,
+      contactName,
+      yearsInBusiness
     } = req.body;
+
+    // Verificar si ya existe un proveedor con ese email
+    const existingProvider = await Provider.findOne({
+      where: { email }
+    });
+
+    if (existingProvider) {
+      return res.status(400).json({ 
+        error: "Ya existe un proveedor registrado con este email" 
+      });
+    }
 
     const provider = await Provider.create({
       company,
       description,
       location,
-      plan,
-      categories,
-      images,
+      plan: plan || "free",
+      categories: categories || "",
+      images: images || [],
       email,
       phone,
       website,
+      status: "pending",
+      verified: false
     });
 
     res.status(201).json(provider);
   } catch (error) {
+    console.error("Error creando proveedor:", error);
     res.status(500).json({ error: error.message });
   }
 };

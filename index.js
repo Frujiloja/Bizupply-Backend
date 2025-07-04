@@ -1,6 +1,8 @@
 const server = require("./src/app.js");
 const { conn } = require("./src/db.js");
 const { loadProvidersInDB } = require("./src/helpers/initialProviders.js");
+const { loadProductsInDB } = require("./src/helpers/initialProducts.js");
+
 
 require("dotenv").config();
 const { PORT } = process.env;
@@ -14,5 +16,6 @@ conn.sync({ force: false }).then(async () => {
     
     // Cargar datos iniciales de proveedores
     await loadProvidersInDB();
+    await loadProductsInDB();
   });
 });
