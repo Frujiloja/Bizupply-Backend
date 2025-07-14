@@ -15,6 +15,8 @@ const loadProvidersInDB = async () => {
         isWide: false,
         status: "active",
         email: "info@bolsasrodriguez.com",
+        phone: 1123456789,
+        website: "www.website.com.ar",
         verified: true
       },
       {
@@ -29,6 +31,8 @@ const loadProvidersInDB = async () => {
         isWide: false,
         status: "active",
         email: "info@buenconsejo.com",
+        phone: 1123456789,
+        website: "www.website.com.ar",
         verified: true
       },
       {
@@ -43,6 +47,8 @@ const loadProvidersInDB = async () => {
         isWide: false,
         status: "active",
         email: "info@rokutobi.com",
+        phone: 1123456789,
+        website: "www.website.com.ar",
         verified: true
       },
       {
@@ -57,6 +63,8 @@ const loadProvidersInDB = async () => {
         isWide: false,
         status: "active",
         email: "info@benitomo.com",
+        phone: 1123456789,
+        website: "www.website.com.ar",
         verified: true
       },
       {
@@ -71,6 +79,8 @@ const loadProvidersInDB = async () => {
         isWide: true,
         status: "active",
         email: "info@marvel.com",
+        phone: 1123456789,
+        website: "www.website.com.ar",
         verified: true
       },
       {
@@ -89,6 +99,8 @@ const loadProvidersInDB = async () => {
         isWide: false,
         status: "active",
         email: "info@plasticosmartinez.com",
+        phone: 1123456789,
+        website: "www.website.com.ar",
         verified: true
       },
       {
@@ -103,6 +115,8 @@ const loadProvidersInDB = async () => {
         isWide: false,
         status: "active",
         email: "info@logisticasrl.com",
+        phone: 1123456789,
+        website: "www.website.com.ar",
         verified: true
       },
       {
@@ -117,6 +131,8 @@ const loadProvidersInDB = async () => {
         isWide: false,
         status: "active",
         email: "info@avabeauty.com",
+        phone: 1123456789,
+        website: "www.website.com.ar",
         verified: true
       },
       {
@@ -131,6 +147,8 @@ const loadProvidersInDB = async () => {
         isWide: false,
         status: "active",
         email: "info@plasticosbeta.com",
+        phone: 1123456789,
+        website: "www.website.com.ar",
         verified: true
       },
       {
@@ -145,6 +163,8 @@ const loadProvidersInDB = async () => {
         isWide: false,
         status: "active",
         email: "info@quimicosrusso.com",
+        phone: 1123456789,
+        website: "www.website.com.ar",
         verified: true
       },
       {
@@ -159,6 +179,8 @@ const loadProvidersInDB = async () => {
         isWide: false,
         status: "active",
         email: "info@oymspace.com",
+        phone: 1123456789,
+        website: "www.website.com.ar",
         verified: true
       }
     ];
