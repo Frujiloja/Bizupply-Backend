@@ -54,7 +54,8 @@ const createProvider = async (req, res) => {
       phone,
       website,
       contactName,
-      yearsInBusiness
+      yearsInBusiness,
+      userId 
     } = req.body;
 
     // Verificar si ya existe un proveedor con ese email
@@ -81,6 +82,13 @@ const createProvider = async (req, res) => {
       status: "pending",
       verified: false
     });
+
+    if (userId) {
+      const user = await User.findByPk(userId);
+      if (user) {
+        await user.update({ provider_id: provider.id });
+      }
+    }
 
     res.status(201).json(provider);
   } catch (error) {
