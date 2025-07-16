@@ -86,7 +86,10 @@ const createProvider = async (req, res) => {
     if (userId) {
       const user = await User.findByPk(userId);
       if (user) {
-        await user.update({ provider_id: provider.id });
+        await user.update({ 
+          provider_id: provider.id,
+          role: "provider" // Cambia el rol a provider
+        });
       }
     }
 
