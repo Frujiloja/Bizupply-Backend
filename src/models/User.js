@@ -50,6 +50,7 @@ module.exports = (sequelize) => {
       },
       provider_id: {
         type: DataTypes.INTEGER,
+        allowNull: true, // Esto es importante
         references: {
           model: 'providers',
           key: 'id'

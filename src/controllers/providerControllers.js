@@ -5,7 +5,6 @@ const { Op } = require("sequelize");
 const getAllProviders = async (req, res) => {
   try {
     const providers = await Provider.findAll({
-      where: { status: "active" },
       include: [
         {
           model: Rating,
@@ -122,12 +121,20 @@ const deleteProvider = async (req, res) => {
   try {
     const { id } = req.params;
     const provider = await Provider.findByPk(id);
-    
+
     if (!provider) {
       return res.status(404).json({ error: "Proveedor no encontrado" });
     }
 
+    // 1. Desvincular usuarios asociados
+    await User.update(
+      { provider_id: null },
+      { where: { provider_id: id } }
+    );
+
+    // 2. Eliminar el proveedor
     await provider.destroy();
+
     res.json({ message: "Proveedor eliminado correctamente" });
   } catch (error) {
     res.status(500).json({ error: error.message });
