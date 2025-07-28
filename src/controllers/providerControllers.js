@@ -18,6 +18,32 @@ const getAllProviders = async (req, res) => {
   }
 };
 
+const trackProviderView = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const provider = await Provider.findByPk(id, {
+      attributes: ['id', 'views']
+    });
+
+    if (!provider) {
+      return res.status(404).json({ message: 'Provider not found' });
+    }
+
+    await provider.increment('views', { by: 1 });
+    await provider.reload({ attributes: ['id', 'views'] });
+
+    return res.status(200).json({
+      message: 'Visita registrada',
+      id: provider.id,
+      views: provider.views,
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Error al registrar la visita' });
+  }
+};
+
 // Obtener proveedor por ID
 const getProviderById = async (req, res) => {
   try {
@@ -181,4 +207,5 @@ module.exports = {
   deleteProvider,
   getProvidersByPlan,
   getProvidersByCategory,
+  trackProviderView
 };

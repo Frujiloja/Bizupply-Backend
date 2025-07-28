@@ -7,6 +7,7 @@ const {
   deleteProvider,
   getProvidersByPlan,
   getProvidersByCategory,
+  trackProviderView,              // <-- agregá esto
 } = require("../controllers/providerControllers.js");
 
 const router = Router();
@@ -16,6 +17,7 @@ router.get("/plan/:plan", getProvidersByPlan);
 router.get("/category/:category", getProvidersByCategory);
 router.get("/:id", getProviderById);
 router.post("/", createProvider);
+router.post("/:id/track-view", trackProviderView); // <-- NUEVA RUTA
 router.put("/:id", updateProvider);
 router.delete("/:id", deleteProvider);
 
