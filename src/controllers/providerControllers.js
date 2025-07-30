@@ -80,7 +80,8 @@ const createProvider = async (req, res) => {
       website,
       contactName,
       yearsInBusiness,
-      userId 
+      userId,
+      products // <--- NUEVO: array de productos
     } = req.body;
 
     // Verificar si ya existe un proveedor con ese email
@@ -101,6 +102,7 @@ const createProvider = async (req, res) => {
       plan: plan || "free",
       categories: categories || "",
       images: images || [],
+      products: products || [], // <--- NUEVO: guardar productos
       email,
       phone,
       website,

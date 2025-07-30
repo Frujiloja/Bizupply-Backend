@@ -71,6 +71,10 @@ module.exports = (sequelize) => {
         type: DataTypes.BOOLEAN,
         defaultValue: false,
       },
+      products: {
+        type: DataTypes.JSON,
+        defaultValue: [],
+      },
       views: {
         type: DataTypes.INTEGER,
         allowNull: false,
