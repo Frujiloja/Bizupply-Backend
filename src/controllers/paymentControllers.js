@@ -3,10 +3,12 @@ require("dotenv").config();
 
 const mercadopago = require("mercadopago");
 
+{/* 
 // Configurar MercadoPago con las credenciales del .env
 mercadopago.configure({
   access_token: process.env.MERCADOPAGO_ACCESS_TOKEN,
 });
+*/}
 
 // Crear pago para planes de proveedores
 const createPlanPayment = async (req, res) => {
