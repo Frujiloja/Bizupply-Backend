@@ -18,6 +18,10 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: false,
       },
+      longDescription: {
+        type: DataTypes.TEXT,
+        allowNull: true,
+      },
       rating: {
         type: DataTypes.FLOAT,
         defaultValue: 0,
