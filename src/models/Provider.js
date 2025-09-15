@@ -31,7 +31,7 @@ module.exports = (sequelize) => {
         defaultValue: 0,
       },
       location: {
-        type: DataTypes.STRING,
+        type: DataTypes.TEXT,
         allowNull: false,
       },
       plan: {
