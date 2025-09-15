@@ -55,6 +55,11 @@ module.exports = (sequelize) => {
           model: 'providers',
           key: 'id'
         }
+      },
+      saved_provider_ids: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        allowNull: false,
+        defaultValue: [],
       }
     },
     {

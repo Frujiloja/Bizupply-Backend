@@ -3,6 +3,61 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
 
+const getSavedProviders = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByPk(id);
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    const ids = user.saved_provider_ids || [];
+    if (!ids.length) return res.json([]);
+
+    const providers = await Provider.findAll({ where: { id: ids } });
+    res.json(providers);
+  } catch (error) {
+    console.error("getSavedProviders error:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
+const addSavedProvider = async (req, res) => {
+  try {
+    const { id } = req.params; // user id
+    const { providerId } = req.body;
+    if (!providerId) return res.status(400).json({ message: "providerId requerido" });
+
+    const user = await User.findByPk(id);
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    const current = Array.isArray(user.saved_provider_ids) ? user.saved_provider_ids : [];
+    if (!current.includes(providerId)) {
+      current.push(providerId);
+      await user.update({ saved_provider_ids: current });
+    }
+    return res.status(201).json({ message: "Guardado" });
+  } catch (error) {
+    console.error("addSavedProvider error:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
+const removeSavedProvider = async (req, res) => {
+  try {
+    const { id, providerId } = req.params;
+    const user = await User.findByPk(id);
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    const current = Array.isArray(user.saved_provider_ids) ? user.saved_provider_ids : [];
+    const next = current.filter((pid) => Number(pid) !== Number(providerId));
+    await user.update({ saved_provider_ids: next });
+
+    return res.json({ message: "Eliminado" });
+  } catch (error) {
+    console.error("removeSavedProvider error:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
 const getAllUsers = async (req, res) => {
   try {
     const users = await User.findAll({
@@ -256,4 +311,7 @@ module.exports = {
   updateUserProfile,
   getUserByEmail,
   getAllUsers,
+  getSavedProviders,
+  addSavedProvider,
+  removeSavedProvider,
 };
