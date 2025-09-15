@@ -10,32 +10,38 @@ const server = express();
 
 server.name = "BizSupply API";
 
+// ----- CORS -----
+const allowedOrigins = [
+  "https://bizupply.netlify.app",
+  "http://localhost:5173",
+  "http://localhost:8080"
+];
+
 server.use(cors({
-  origin: 'https://bizupply.netlify.app',
+  origin: function(origin, callback) {
+    // permitir requests sin origin (como Postman)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = "The CORS policy for this site does not allow access from the specified Origin.";
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"]
 }));
+
+// ----- Middlewares -----
 server.use(bodyParser.urlencoded({ extended: true, limit: "50mb" }));
 server.use(bodyParser.json({ limit: "50mb" }));
 server.use(cookieParser());
 server.use(morgan("dev"));
 
-server.use((req, res, next) => {
-  res.header(
-    "Access-Control-Allow-Origin",
-    "http://localhost:8080",
-    "http://localhost:5173" // Tu frontend de Vite
-  );
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  );
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
-  next();
-});
-
+// ----- Rutas -----
 server.use("/api", routes);
 
-// Error catching endware.
+// ----- Manejo de errores -----
 server.use((err, req, res, next) => {
   const status = err.status || 500;
   const message = err.message || err;
