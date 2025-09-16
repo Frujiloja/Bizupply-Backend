@@ -36,7 +36,7 @@ const addSavedProvider = async (req, res) => {
     }
     return res.status(201).json({ message: "Guardado" });
   } catch (error) {
-    console.error("addSaveProvider error:", e?.response?.data || e);
+    //console.error("addSaveProvider error:", e?.response?.data || e);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
