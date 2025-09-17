@@ -120,6 +120,9 @@ const removeSavedProvider = async (req, res) => {
     const { id, providerId } = req.params;
     const uid = Number(id);
     const pid = Number(providerId);
+    
+    console.log("removeSavedProvider - uid:", uid, "pid:", pid);
+    
     if (!Number.isInteger(uid) || !Number.isInteger(pid)) {
       return res.status(400).json({ message: "IDs inválidos" });
     }
@@ -130,14 +133,22 @@ const removeSavedProvider = async (req, res) => {
     const current = Array.isArray(user.saved_provider_ids)
       ? user.saved_provider_ids.map(Number).filter(n => Number.isInteger(n))
       : [];
+    
+    console.log("current saved_provider_ids:", user.saved_provider_ids);
+    console.log("parsed current:", current);
+    console.log("looking for pid:", pid);
 
     const next = current.filter(n => n !== pid);
+    console.log("next array:", next);
+    
     if (next.length === current.length) {
+      console.log("No se encontró el providerId para eliminar");
       return res.json({ message: "No había nada para eliminar" });
     }
 
     // Construye literal de array Postgres, soporta vacío '{}'
     const pgArrayLiteral = next.length ? `{${next.join(",")}}` : "{}";
+    console.log("updating with:", pgArrayLiteral);
 
     await User.sequelize.query(
       `UPDATE "users" SET "saved_provider_ids" = '${pgArrayLiteral}' WHERE id = :id`,
