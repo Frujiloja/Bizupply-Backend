@@ -43,26 +43,73 @@ const addSavedProvider = async (req, res) => {
 };
 */}
 
+// asumo que User viene de ../db.js como antes
 const addSavedProvider = async (req, res) => {
   try {
     const { id } = req.params; // user id
-    const { providerId } = req.body;
-    if (!providerId) return res.status(400).json({ message: "providerId requerido" });
+    let { providerId } = req.body;
+
+    console.log("addSavedProvider body:", req.body);
+
+    // Normalizar providerId: puede venir 1, "1", [1], "[1]", '{"1"}', etc.
+    if (typeof providerId === "string") {
+      // intentar parse JSON (p.ej. "[1]" o "1")
+      try {
+        const parsed = JSON.parse(providerId);
+        providerId = parsed;
+      } catch (e) {
+        // no JSON -> dejar como string y procesar abajo
+      }
+    }
+
+    if (Array.isArray(providerId)) {
+      // si llega array tomamos el primer elemento (es la forma "mandar un solo id")
+      providerId = providerId[0];
+    }
+
+    // si queda string del tipo '{1}' o '"1"' extraer dígitos
+    if (typeof providerId === "string") {
+      const m = providerId.match(/\d+/);
+      providerId = m ? Number(m[0]) : NaN;
+    } else {
+      providerId = Number(providerId);
+    }
+
+    if (!Number.isInteger(providerId)) {
+      return res.status(400).json({ message: "providerId inválido" });
+    }
 
     const user = await User.findByPk(id);
     if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
-    const current = Array.isArray(user.saved_provider_ids) ? user.saved_provider_ids : [];
-    const pid = Number(providerId); // 👈 casteo a integer
+    // Normalizar current desde DB (puede venir como array, null, o incluso string con llaves)
+    let current = user.saved_provider_ids;
+    if (!Array.isArray(current)) {
+      if (typeof current === "string") {
+        // puede ser "{1,2}" o '["1"]'
+        try {
+          current = JSON.parse(current);
+        } catch {
+          // convertir Postgres array textual "{1,2}" -> [1,2]
+          current = current.replace(/^{|}$/g, "").split(",").filter(Boolean).map(x => Number(x));
+        }
+      } else {
+        current = [];
+      }
+    }
 
-    if (!current.includes(pid)) {
-      current.push(pid);
+    // asegurar que sean enteros
+    current = current.map(n => Number(n)).filter(n => Number.isInteger(n));
+
+    if (!current.includes(providerId)) {
+      current.push(providerId);
       await user.update({ saved_provider_ids: current });
     }
+
     return res.status(201).json({ message: "Guardado", saved_provider_ids: current });
   } catch (error) {
     console.error("addSaveProvider error:", error);
-    res.status(500).json({ message: error.message }); // 👈 ahora vas a ver el motivo real
+    return res.status(500).json({ message: error.message });
   }
 };
 
