@@ -1,7 +1,7 @@
 const { User, Provider, Rating } = require("../db.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
+const { Op } = require("sequelize");
 
 const getSavedProviders = async (req, res) => {
   try {
@@ -9,11 +9,25 @@ const getSavedProviders = async (req, res) => {
     const user = await User.findByPk(id);
     if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
-    const ids = user.saved_provider_ids || [];
-    if (!ids.length) return res.json([]);
+    const raw = user.saved_provider_ids;
+    // Normalizamos a array de enteros
+    const ids = Array.isArray(raw) ? raw : (raw != null ? [raw] : []);
+    const parsed = ids
+      .map((v) => Number(v))
+      .filter((n) => Number.isInteger(n) && n > 0);
 
-    const providers = await Provider.findAll({ where: { id: ids } });
-    res.json(providers);
+    if (parsed.length === 0) return res.json([]);
+
+    // Traer proveedores por IN
+    const providers = await Provider.findAll({
+      where: { id: { [Op.in]: parsed } },
+    });
+
+    // Opcional: mantener el orden de ids guardados
+    const byId = new Map(providers.map(p => [p.id, p]));
+    const ordered = parsed.map(id => byId.get(id)).filter(Boolean);
+
+    res.json(ordered);
   } catch (error) {
     console.error("getSavedProviders error:", error);
     res.status(500).json({ message: "Error interno del servidor" });
