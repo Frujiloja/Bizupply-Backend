@@ -130,8 +130,13 @@ const removeSavedProvider = async (req, res) => {
     const user = await User.findByPk(uid);
     if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
-    const current = Array.isArray(user.saved_provider_ids)
-      ? user.saved_provider_ids.map(Number).filter(n => Number.isInteger(n))
+    const currentRaw = user.saved_provider_ids;
+
+
+    const current = Array.isArray(currentRaw)
+    ? currentRaw.map(Number).filter(Number.isInteger)
+    : Number.isInteger(currentRaw)
+      ? [currentRaw]
       : [];
     
     console.log("current saved_provider_ids:", user.saved_provider_ids);
