@@ -118,30 +118,33 @@ const removeSavedProvider = async (req, res) => {
 const removeSavedProvider = async (req, res) => {
   try {
     const { id, providerId } = req.params;
+    const uid = Number(id);
+    const pid = Number(providerId);
+    if (!Number.isInteger(uid) || !Number.isInteger(pid)) {
+      return res.status(400).json({ message: "IDs inválidos" });
+    }
 
-    const numericId = Number(providerId);
-    if (isNaN(numericId)) return res.status(400).json({ message: "providerId inválido" });
-
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(uid);
     if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
-    // Aseguramos array de números
     const current = Array.isArray(user.saved_provider_ids)
-      ? user.saved_provider_ids.map(Number)
+      ? user.saved_provider_ids.map(Number).filter(n => Number.isInteger(n))
       : [];
 
-    const newSaved = current.filter((pid) => pid !== numericId);
+    const next = current.filter(n => n !== pid);
+    if (next.length === current.length) {
+      return res.json({ message: "No había nada para eliminar" });
+    }
 
-    // PASO CLAVE: usar literal de Postgres
+    // Construye literal de array Postgres, soporta vacío '{}'
+    const pgArrayLiteral = next.length ? `{${next.join(",")}}` : "{}";
+
     await User.sequelize.query(
-      `UPDATE "users" SET "saved_provider_ids" = :ids WHERE id = :id`,
-      {
-        replacements: { ids: newSaved, id },
-        type: User.sequelize.QueryTypes.UPDATE,
-      }
+      `UPDATE "users" SET "saved_provider_ids" = '${pgArrayLiteral}' WHERE id = :id`,
+      { replacements: { id: uid }, type: User.sequelize.QueryTypes.UPDATE }
     );
 
-    return res.status(200).json({ message: "Proveedor eliminado" });
+    return res.json({ message: "Eliminado" });
   } catch (error) {
     console.error("removeSavedProvider error:", error);
     res.status(500).json({ message: "Error interno del servidor" });
