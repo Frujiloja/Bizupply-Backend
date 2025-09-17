@@ -20,6 +20,7 @@ const getSavedProviders = async (req, res) => {
   }
 };
 
+{/*
 const addSavedProvider = async (req, res) => {
   try {
     const { id } = req.params; // user id
@@ -40,6 +41,31 @@ const addSavedProvider = async (req, res) => {
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
+*/}
+
+const addSavedProvider = async (req, res) => {
+  try {
+    const { id } = req.params; // user id
+    const { providerId } = req.body;
+    if (!providerId) return res.status(400).json({ message: "providerId requerido" });
+
+    const user = await User.findByPk(id);
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    const current = Array.isArray(user.saved_provider_ids) ? user.saved_provider_ids : [];
+    const pid = Number(providerId); // 👈 casteo a integer
+
+    if (!current.includes(pid)) {
+      current.push(pid);
+      await user.update({ saved_provider_ids: current });
+    }
+    return res.status(201).json({ message: "Guardado", saved_provider_ids: current });
+  } catch (error) {
+    console.error("addSaveProvider error:", error);
+    res.status(500).json({ message: error.message }); // 👈 ahora vas a ver el motivo real
+  }
+};
+
 
 const removeSavedProvider = async (req, res) => {
   try {
