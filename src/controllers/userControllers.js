@@ -47,25 +47,32 @@ const addSavedProvider = async (req, res) => {
 
 const addSavedProvider = async (req, res) => {
   try {
-    const { id } = req.params; // user id
+    const { id } = req.params;
     let { providerId } = req.body;
 
     if (!providerId) return res.status(400).json({ message: "providerId requerido" });
 
-    // Convertir a número
     providerId = Number(providerId);
-
-    if (isNaN(providerId)) {
-      return res.status(400).json({ message: "providerId inválido" });
-    }
+    if (isNaN(providerId)) return res.status(400).json({ message: "providerId inválido" });
 
     const user = await User.findByPk(id);
     if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
-    const current = Array.isArray(user.saved_provider_ids) ? user.saved_provider_ids : [];
+    // Nos aseguramos de que sea un array de enteros
+    const current = Array.isArray(user.saved_provider_ids)
+      ? user.saved_provider_ids.map(Number)
+      : [];
+
     if (!current.includes(providerId)) {
       current.push(providerId);
-      await user.update({ saved_provider_ids: current });
+      // PASO CLAVE: usamos literal de Postgres para arrays
+      await User.sequelize.query(
+        `UPDATE "users" SET "saved_provider_ids" = :ids WHERE id = :id`,
+        {
+          replacements: { ids: current, id },
+          type: User.sequelize.QueryTypes.UPDATE,
+        }
+      );
     }
 
     return res.status(201).json({ message: "Guardado" });
