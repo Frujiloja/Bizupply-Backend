@@ -128,13 +128,10 @@ const removeSavedProvider = async (req, res) => {
     const user = await User.findByPk(uid);
     if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
 
-    const currentRaw = user.saved_provider_ids;
-
-    const current = Array.isArray(currentRaw)
-      ? currentRaw.map(Number).filter(Number.isInteger)
-      : Number.isInteger(currentRaw)
-        ? [currentRaw]
-        : [];
+    // Aseguramos array de enteros
+    const current = Array.isArray(user.saved_provider_ids)
+      ? user.saved_provider_ids.map(Number).filter(Number.isInteger)
+      : [];
 
     const next = current.filter(n => n !== pid);
 
@@ -142,9 +139,9 @@ const removeSavedProvider = async (req, res) => {
       return res.json({ message: "No había nada para eliminar" });
     }
 
-    // 🚨 Lo clave: usamos replacements y dejamos que Sequelize maneje el array
+    // 🚨 Usamos Sequelize con replacements y ARRAY literal para Postgres
     await User.sequelize.query(
-      `UPDATE "users" SET "saved_provider_ids" = :ids WHERE id = :id`,
+      'UPDATE "users" SET "saved_provider_ids" = ARRAY[:...ids]::INTEGER[] WHERE id = :id',
       {
         replacements: { ids: next, id: uid },
         type: User.sequelize.QueryTypes.UPDATE,
@@ -157,6 +154,7 @@ const removeSavedProvider = async (req, res) => {
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
+
 
 
 
