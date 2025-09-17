@@ -96,7 +96,7 @@ const addSavedProvider = async (req, res) => {
   }
 };
 
-
+{/*
 const removeSavedProvider = async (req, res) => {
   try {
     const { id, providerId } = req.params;
@@ -113,6 +113,41 @@ const removeSavedProvider = async (req, res) => {
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
+*/}
+
+const removeSavedProvider = async (req, res) => {
+  try {
+    const { id, providerId } = req.params;
+
+    const numericId = Number(providerId);
+    if (isNaN(numericId)) return res.status(400).json({ message: "providerId inválido" });
+
+    const user = await User.findByPk(id);
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    // Aseguramos array de números
+    const current = Array.isArray(user.saved_provider_ids)
+      ? user.saved_provider_ids.map(Number)
+      : [];
+
+    const newSaved = current.filter((pid) => pid !== numericId);
+
+    // PASO CLAVE: usar literal de Postgres
+    await User.sequelize.query(
+      `UPDATE "users" SET "saved_provider_ids" = :ids WHERE id = :id`,
+      {
+        replacements: { ids: newSaved, id },
+        type: User.sequelize.QueryTypes.UPDATE,
+      }
+    );
+
+    return res.status(200).json({ message: "Proveedor eliminado" });
+  } catch (error) {
+    console.error("removeSavedProvider error:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+
 
 const getAllUsers = async (req, res) => {
   try {
