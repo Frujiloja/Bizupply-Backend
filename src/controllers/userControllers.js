@@ -64,13 +64,26 @@ const addSavedProvider = async (req, res) => {
     const { id } = req.params;
     let { providerId } = req.body;
 
-    if (!providerId) return res.status(400).json({ message: "providerId requerido" });
+    console.log(`ℹ️ Received request to add provider ${providerId} for user ${id}`);
+
+    if (!providerId) {
+      console.log("❌ providerId is missing");
+      return res.status(400).json({ message: "providerId requerido" });
+    }
 
     providerId = Number(providerId);
-    if (isNaN(providerId)) return res.status(400).json({ message: "providerId inválido" });
+    if (isNaN(providerId)) {
+      console.log("❌ providerId is invalid");
+      return res.status(400).json({ message: "providerId inválido" });
+    }
 
     const user = await User.findByPk(id);
-    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    if (!user) {
+      console.log(`❌ User ${id} not found`);
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    console.log("ℹ️ Current saved_provider_ids:", user.saved_provider_ids);
 
     // Nos aseguramos de que sea un array de enteros
     const current = Array.isArray(user.saved_provider_ids)
@@ -79,19 +92,18 @@ const addSavedProvider = async (req, res) => {
 
     if (!current.includes(providerId)) {
       current.push(providerId);
-      // PASO CLAVE: usamos literal de Postgres para arrays
-      await User.sequelize.query(
-        `UPDATE "users" SET "saved_provider_ids" = :ids WHERE id = :id`,
-        {
-          replacements: { ids: current, id },
-          type: User.sequelize.QueryTypes.UPDATE,
-        }
-      );
+      console.log("🔄 Updating saved_provider_ids:", current);
+
+      // Actualizar en la base de datos
+      await user.update({ saved_provider_ids: current });
+      console.log("✅ Saved_provider_ids updated successfully");
+    } else {
+      console.log(`⚠️ Provider ${providerId} is already in saved_provider_ids`);
     }
 
     return res.status(201).json({ message: "Guardado" });
   } catch (error) {
-    console.error("addSaveProvider error:", error);
+    console.error("❌ addSavedProvider error:", error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
