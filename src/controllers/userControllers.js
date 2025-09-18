@@ -94,8 +94,8 @@ const addSavedProvider = async (req, res) => {
       current.push(providerId);
       console.log("🔄 Updating saved_provider_ids:", current);
 
-      // Actualizar en la base de datos
-      await user.update({ saved_provider_ids: current });
+      // Asegurarnos de que el array se pase correctamente
+      await user.update({ saved_provider_ids: Sequelize.literal(`ARRAY[${current.join(',')}]::INTEGER[]`) });
       console.log("✅ Saved_provider_ids updated successfully");
     } else {
       console.log(`⚠️ Provider ${providerId} is already in saved_provider_ids`);
