@@ -60,6 +60,11 @@ module.exports = (sequelize) => {
         type: DataTypes.ARRAY(DataTypes.INTEGER),
         allowNull: false,
         defaultValue: [],
+      },
+      saved: {
+        type: DataTypes.TEXT, // Cambiado a TEXT
+        allowNull: false,
+        defaultValue: "",
       }
     },
     {

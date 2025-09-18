@@ -7,34 +7,30 @@ const { Op } = require("sequelize");
 const getSavedProviders = async (req, res) => {
   try {
     const { id } = req.params;
+
     const user = await User.findByPk(id);
-    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
 
-    const raw = user.saved_provider_ids;
-    // Normalizamos a array de enteros
-    const ids = Array.isArray(raw) ? raw : (raw != null ? [raw] : []);
-    const parsed = ids
-      .map((v) => Number(v))
-      .filter((n) => Number.isInteger(n) && n > 0);
+    const saved = user.saved
+      ? user.saved.split(',').map(Number)
+      : [];
 
-    if (parsed.length === 0) return res.json([]);
+    if (saved.length === 0) {
+      return res.json([]);
+    }
 
-    // Traer proveedores por IN
     const providers = await Provider.findAll({
-      where: { id: { [Op.in]: parsed } },
+      where: { id: { [Op.in]: saved } },
     });
 
-    // Opcional: mantener el orden de ids guardados
-    const byId = new Map(providers.map(p => [p.id, p]));
-    const ordered = parsed.map(id => byId.get(id)).filter(Boolean);
-
-    res.json(ordered);
+    res.json(providers);
   } catch (error) {
-    console.error("getSavedProviders error:", error);
+    console.error("❌ getSavedProviders error:", error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
-
 {/*
 
 const addSavedProvider = async (req, res) => {
@@ -62,7 +58,7 @@ const addSavedProvider = async (req, res) => {
 
 const addSavedProvider = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // ID del usuario
     let { providerId } = req.body;
 
     console.log(`ℹ️ Received request to add provider ${providerId} for user ${id}`);
@@ -84,22 +80,22 @@ const addSavedProvider = async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    console.log("ℹ️ Current saved_provider_ids:", user.saved_provider_ids);
+    console.log("ℹ️ Current saved:", user.saved);
 
-    // Nos aseguramos de que sea un array de enteros
-    const current = Array.isArray(user.saved_provider_ids)
-      ? user.saved_provider_ids.map(Number)
+    // Convertir la cadena a un array
+    const current = user.saved
+      ? user.saved.split(',').map(Number)
       : [];
 
     if (!current.includes(providerId)) {
       current.push(providerId);
-      console.log("🔄 Updating saved_provider_ids:", current);
+      console.log("🔄 Updating saved:", current);
 
-      // Asegurarnos de que el array se pase correctamente
-      await user.update({ saved_provider_ids: Sequelize.literal(`ARRAY[${current.join(',')}]::INTEGER[]`) });
-      console.log("✅ Saved_provider_ids updated successfully");
+      // Convertir el array de vuelta a una cadena
+      await user.update({ saved: current.join(',') });
+      console.log("✅ Saved updated successfully");
     } else {
-      console.log(`⚠️ Provider ${providerId} is already in saved_provider_ids`);
+      console.log(`⚠️ Provider ${providerId} is already in saved`);
     }
 
     return res.status(201).json({ message: "Guardado" });
@@ -131,39 +127,36 @@ const removeSavedProvider = async (req, res) => {
 const removeSavedProvider = async (req, res) => {
   try {
     const { id, providerId } = req.params;
-    const uid = Number(id);
-    const pid = Number(providerId);
 
-    if (!Number.isInteger(uid) || !Number.isInteger(pid)) {
-      return res.status(400).json({ message: "IDs inválidos" });
+    console.log(`ℹ️ Received request to remove provider ${providerId} for user ${id}`);
+
+    const user = await User.findByPk(id);
+    if (!user) {
+      console.log(`❌ User ${id} not found`);
+      return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    const user = await User.findByPk(uid);
-    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    console.log("ℹ️ Current saved:", user.saved);
 
-    // Aseguramos array de enteros
-    const current = Array.isArray(user.saved_provider_ids)
-      ? user.saved_provider_ids.map(Number).filter(Number.isInteger)
+    // Convertir la cadena a un array
+    const current = user.saved
+      ? user.saved.split(',').map(Number)
       : [];
 
-    const next = current.filter(n => n !== pid);
+    const next = current.filter((pid) => pid !== Number(providerId));
 
     if (next.length === current.length) {
-      return res.json({ message: "No había nada para eliminar" });
+      console.log("⚠️ Provider not found in saved");
+      return res.status(404).json({ message: "Proveedor no encontrado en guardados" });
     }
 
-    // 🚨 Usamos Sequelize con replacements y ARRAY literal para Postgres
-    await User.sequelize.query(
-      'UPDATE "users" SET "saved_provider_ids" = ARRAY[:...ids]::INTEGER[] WHERE id = :id',
-      {
-        replacements: { ids: next, id: uid },
-        type: User.sequelize.QueryTypes.UPDATE,
-      }
-    );
+    // Convertir el array de vuelta a una cadena
+    await user.update({ saved: next.join(',') });
+    console.log("✅ Saved updated successfully");
 
     return res.json({ message: "Eliminado" });
   } catch (error) {
-    console.error("removeSavedProvider error:", error);
+    console.error("❌ removeSavedProvider error:", error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
