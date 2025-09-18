@@ -1,4 +1,5 @@
-const { User, Provider, Rating, Sequelize } = require("../db.js");
+const { User, Provider, Rating } = require("../db.js");
+const { Sequelize } = require("sequelize");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { Op } = require("sequelize");
