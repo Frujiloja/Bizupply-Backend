@@ -36,7 +36,7 @@ module.exports = (sequelize) => {
       },
       provincias: {
         type: DataTypes.TEXT,
-        allowNull: false,
+        allowNull: true,
       },
       plan: {
         type: DataTypes.ENUM("free", "plus", "pro", "max"),
