@@ -34,6 +34,10 @@ module.exports = (sequelize) => {
         type: DataTypes.TEXT,
         allowNull: false,
       },
+      provincias: {
+        type: DataTypes.TEXT,
+        allowNull: false,
+      },
       plan: {
         type: DataTypes.ENUM("free", "plus", "pro", "max"),
         defaultValue: "free",
@@ -85,8 +89,8 @@ module.exports = (sequelize) => {
       views: {
         type: DataTypes.INTEGER,
         allowNull: false,
-        defaultValue: 0
-      }
+        defaultValue: 0,
+      },
     },
     {
       timestamps: true,
