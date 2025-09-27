@@ -13,6 +13,7 @@ server.name = "BizSupply API";
 // ----- CORS -----
 const allowedOrigins = [
   "https://bizupply.netlify.app",
+  "https://bizupply.com.ar",
   "http://localhost:5173",
   "http://localhost:8080"
 ];
