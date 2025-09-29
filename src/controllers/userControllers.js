@@ -226,21 +226,21 @@ const createUser = async (req, res, next) => {
   )
     return res.status(400).send({ message: "fields can not be empty" });
 
-  try {
-    // Crear el nuevo usuario
-    const userCreated = await User.create({
-      first_name,
-      last_name,
-      email,
-      address: address || "",
-      phone: phone || "",
-      role: role || "client",
-      profile_image: profile_image || null,
-      auth0_id: auth0_id,
-      //provider_id: null, // ✅ Explicitly set to null for regular users
-      //saved_provider_ids: [],
-      //saved: "",
-    });
+    try {
+      // Crear el nuevo usuario
+      const userCreated = await User.create({
+        first_name,
+        last_name,
+        email,
+        address: address || "",
+        phone: phone || "",
+        role: role || "client",
+        profile_image: profile_image || null,
+        auth0_id: auth0_id,
+        provider_id: null, // ✅ ESTE CAMPO FALTA EN TU CÓDIGO ACTUAL
+        saved_provider_ids: [],
+        saved: "",
+      });
 
     console.log("User creado correctamente:", userCreated);
 
