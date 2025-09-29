@@ -237,9 +237,9 @@ const createUser = async (req, res, next) => {
       role: role || "client",
       profile_image: profile_image || null,
       auth0_id: auth0_id,
-      provider_id: null, // ✅ Explicitly set to null for regular users
-      saved_provider_ids: [],
-      saved: "",
+      //provider_id: null, // ✅ Explicitly set to null for regular users
+      //saved_provider_ids: [],
+      //saved: "",
     });
 
     console.log("User creado correctamente:", userCreated);
