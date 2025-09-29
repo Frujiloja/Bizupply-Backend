@@ -90,6 +90,8 @@ const createProvider = async (req, res) => {
       yearsInBusiness,
       userId,
       products, // <--- NUEVO: array de productos
+      subcategorias,
+      productsubcategories,
     } = req.body;
 
     // Verificar si ya existe un proveedor con ese email
@@ -111,6 +113,8 @@ const createProvider = async (req, res) => {
       plan: plan || "free",
       categories: categories || "",
       images: images || [],
+      subcategorias: subcategorias || [],
+      productsubcategories: productsubcategories || [],
       products: products || [], // <--- NUEVO: guardar productos
       email,
       phone,
