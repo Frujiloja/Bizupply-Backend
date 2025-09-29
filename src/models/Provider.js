@@ -87,7 +87,7 @@ module.exports = (sequelize) => {
         defaultValue: [],
       },
       productsubcategories: {
-        type: DataTypes.TEXT,
+        type: DataTypes.ARRAY(DataTypes.STRING),
         defaultValue: [],
       },
       views: {
