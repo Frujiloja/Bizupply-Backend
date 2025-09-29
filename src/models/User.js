@@ -57,7 +57,7 @@ module.exports = (sequelize) => {
         }
       },
       saved_provider_ids: {
-        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        type: DataTypes.JSON, // ✅ Cambiar de ARRAY a JSON
         allowNull: false,
         defaultValue: [],
       },
