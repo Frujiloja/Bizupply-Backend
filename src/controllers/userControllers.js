@@ -13,9 +13,7 @@ const getSavedProviders = async (req, res) => {
       return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    const saved = user.saved
-      ? user.saved.split(',').map(Number)
-      : [];
+    const saved = user.saved ? user.saved.split(",").map(Number) : [];
 
     if (saved.length === 0) {
       return res.json([]);
@@ -31,7 +29,8 @@ const getSavedProviders = async (req, res) => {
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
-{/*
+{
+  /*
 
 const addSavedProvider = async (req, res) => {
   try {
@@ -54,14 +53,17 @@ const addSavedProvider = async (req, res) => {
   }
 };
 
-*/}
+*/
+}
 
 const addSavedProvider = async (req, res) => {
   try {
     const { id } = req.params; // ID del usuario
     let { providerId } = req.body;
 
-    console.log(`ℹ️ Received request to add provider ${providerId} for user ${id}`);
+    console.log(
+      `ℹ️ Received request to add provider ${providerId} for user ${id}`
+    );
 
     if (!providerId) {
       console.log("❌ providerId is missing");
@@ -83,16 +85,14 @@ const addSavedProvider = async (req, res) => {
     console.log("ℹ️ Current saved:", user.saved);
 
     // Convertir la cadena a un array
-    const current = user.saved
-      ? user.saved.split(',').map(Number)
-      : [];
+    const current = user.saved ? user.saved.split(",").map(Number) : [];
 
     if (!current.includes(providerId)) {
       current.push(providerId);
       console.log("🔄 Updating saved:", current);
 
       // Convertir el array de vuelta a una cadena
-      await user.update({ saved: current.join(',') });
+      await user.update({ saved: current.join(",") });
       console.log("✅ Saved updated successfully");
     } else {
       console.log(`⚠️ Provider ${providerId} is already in saved`);
@@ -105,7 +105,8 @@ const addSavedProvider = async (req, res) => {
   }
 };
 
-{/*
+{
+  /*
 const removeSavedProvider = async (req, res) => {
   try {
     const { id, providerId } = req.params;
@@ -122,13 +123,16 @@ const removeSavedProvider = async (req, res) => {
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
-*/}
+*/
+}
 
 const removeSavedProvider = async (req, res) => {
   try {
     const { id, providerId } = req.params;
 
-    console.log(`ℹ️ Received request to remove provider ${providerId} for user ${id}`);
+    console.log(
+      `ℹ️ Received request to remove provider ${providerId} for user ${id}`
+    );
 
     const user = await User.findByPk(id);
     if (!user) {
@@ -139,19 +143,19 @@ const removeSavedProvider = async (req, res) => {
     console.log("ℹ️ Current saved:", user.saved);
 
     // Convertir la cadena a un array
-    const current = user.saved
-      ? user.saved.split(',').map(Number)
-      : [];
+    const current = user.saved ? user.saved.split(",").map(Number) : [];
 
     const next = current.filter((pid) => pid !== Number(providerId));
 
     if (next.length === current.length) {
       console.log("⚠️ Provider not found in saved");
-      return res.status(404).json({ message: "Proveedor no encontrado en guardados" });
+      return res
+        .status(404)
+        .json({ message: "Proveedor no encontrado en guardados" });
     }
 
     // Convertir el array de vuelta a una cadena
-    await user.update({ saved: next.join(',') });
+    await user.update({ saved: next.join(",") });
     console.log("✅ Saved updated successfully");
 
     return res.json({ message: "Eliminado" });
@@ -160,9 +164,6 @@ const removeSavedProvider = async (req, res) => {
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
-
-
-
 
 const getAllUsers = async (req, res) => {
   try {
@@ -184,7 +185,7 @@ const getUserByEmail = async (req, res) => {
 
   try {
     const user = await User.findOne({
-      where: { email: email.toLowerCase() }
+      where: { email: email.toLowerCase() },
     });
 
     if (!user) {
@@ -202,16 +203,17 @@ const createUser = async (req, res, next) => {
   console.log(
     "///////////////////////////////Create User///////////////////////////"
   );
-  // // // 1. // // //
+  console.log("Request body:", req.body);
+
   const {
     first_name,
     last_name,
-    gender,
     email,
     address,
     phone,
-    role_id,
-    //user_password,
+    role,
+    profile_image,
+    auth0_id,
   } = req.body;
 
   if (
@@ -229,13 +231,14 @@ const createUser = async (req, res, next) => {
     const userCreated = await User.create({
       first_name,
       last_name,
-      gender,
       email,
-      address,
-      phone,
-      role_id,
-      //user_password,
-      auth0_id: req.body.auth0_id,
+      address: address || "",
+      phone: phone || "",
+      role: role || "client",
+      profile_image: profile_image || null,
+      auth0_id: auth0_id,
+      saved_provider_ids: [],
+      saved: "",
     });
 
     console.log("User creado correctamente:", userCreated);
@@ -245,16 +248,16 @@ const createUser = async (req, res, next) => {
       userID: userCreated.id,
     });
   } catch (error) {
-    console.log(error);
-    next(error);
-    return res.status(500).json({ message: error });
+    console.log("Error creating user:", error);
+    return res.status(500).json({ message: error.message });
   }
 };
 
 // Registro de usuario
 const registerUser = async (req, res) => {
   try {
-    const { first_name, last_name, email, password, role, company_name } = req.body;
+    const { first_name, last_name, email, password, role, company_name } =
+      req.body;
 
     // Verificar si el usuario ya existe
     const existingUser = await User.findOne({ where: { email } });
@@ -272,7 +275,7 @@ const registerUser = async (req, res) => {
       email,
       password: hashedPassword,
       role,
-      company_name
+      company_name,
     });
 
     // Si es proveedor, crear el perfil de proveedor
@@ -285,9 +288,9 @@ const registerUser = async (req, res) => {
         categories: [],
         images: [],
         email,
-        status: "pending"
+        status: "pending",
       });
-      
+
       await user.update({ provider_id: provider.id });
     }
 
@@ -305,9 +308,9 @@ const registerUser = async (req, res) => {
         last_name: user.last_name,
         email: user.email,
         role: user.role,
-        provider_id: user.provider_id
+        provider_id: user.provider_id,
       },
-      token
+      token,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -320,9 +323,9 @@ const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     // Buscar usuario
-    const user = await User.findOne({ 
+    const user = await User.findOne({
       where: { email },
-      include: [{ model: Provider, as: 'provider' }]
+      include: [{ model: Provider, as: "provider" }],
     });
 
     if (!user) {
@@ -350,9 +353,9 @@ const loginUser = async (req, res) => {
         email: user.email,
         role: user.role,
         provider_id: user.provider_id,
-        provider: user.provider
+        provider: user.provider,
       },
-      token
+      token,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -364,7 +367,7 @@ const getUserProfile = async (req, res) => {
   try {
     const { id } = req.params;
     const user = await User.findByPk(id, {
-      include: [{ model: Provider, as: 'provider' }]
+      include: [{ model: Provider, as: "provider" }],
     });
 
     if (!user) {
@@ -380,7 +383,7 @@ const getUserProfile = async (req, res) => {
       phone: user.phone,
       address: user.address,
       company_name: user.company_name,
-      provider: user.provider
+      provider: user.provider,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
