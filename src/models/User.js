@@ -57,14 +57,14 @@ module.exports = (sequelize) => {
         }
       },
       saved_provider_ids: {
-        type: DataTypes.TEXT, // ✅ Cambiar a TEXT
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
         allowNull: false,
-        defaultValue: "[]", // ✅ JSON string
+        defaultValue: [],
       },
       saved: {
-        type: DataTypes.TEXT,
+        type: DataTypes.TEXT, // Cambiado a TEXT
         allowNull: false,
-        defaultValue: "[]", // ✅ Cambiar de "" a "[]"
+        defaultValue: "",
       }
     },
     {

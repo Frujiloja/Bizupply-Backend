@@ -238,8 +238,6 @@ const createUser = async (req, res, next) => {
         profile_image: profile_image || null,
         auth0_id: auth0_id,
         provider_id: null,
-        saved_provider_ids: "[]", // ✅ JSON string
-        saved: "[]", // ✅ JSON string
       });
 
     console.log("User creado correctamente:", userCreated);
