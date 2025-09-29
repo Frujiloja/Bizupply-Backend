@@ -86,8 +86,12 @@ module.exports = (sequelize) => {
         type: DataTypes.JSON,
         defaultValue: [],
       },
+      subcategorias: {
+        type: DataTypes.JSON,
+        defaultValue: [],
+      },
       productsubcategories: {
-        type: DataTypes.ARRAY(DataTypes.STRING),
+        type: DataTypes.JSON,
         defaultValue: [],
       },
       views: {
