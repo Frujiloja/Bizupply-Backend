@@ -237,9 +237,9 @@ const createUser = async (req, res, next) => {
         role: role || "client",
         profile_image: profile_image || null,
         auth0_id: auth0_id,
-        provider_id: null, // ✅ ESTE CAMPO FALTA EN TU CÓDIGO ACTUAL
+        provider_id: null,
         saved_provider_ids: [],
-        saved: "",
+        saved: "[]", // ✅ Cambiar de "" a "[]"
       });
 
     console.log("User creado correctamente:", userCreated);
