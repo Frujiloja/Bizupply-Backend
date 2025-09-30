@@ -57,15 +57,14 @@ module.exports = (sequelize) => {
         }
       },
       saved_provider_ids: {
-        // keep the name; just stop forcing a value on insert
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
         allowNull: true,
-        defaultValue: null,
-        type: DataTypes.INTEGER, // temporarily match the DB to avoid casting errors
+        defaultValue: [],
       },
       saved: {
-        type: DataTypes.TEXT,
+        type: DataTypes.TEXT, // Cambiado a TEXT
         allowNull: false,
-        defaultValue: "[]",
+        defaultValue: "",
       }
     },
     {
