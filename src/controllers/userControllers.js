@@ -203,7 +203,7 @@ const removeSavedProvider = async (req, res) => {
 };
 */
 }
-
+{/*
 const removeSavedProvider = async (req, res) => {
   try {
     const { id, providerId } = req.params;
@@ -234,6 +234,63 @@ const removeSavedProvider = async (req, res) => {
 
     // Convertir el array de vuelta a una cadena
     await user.update({ saved: next.join(",") });
+    console.log("✅ Saved updated successfully");
+
+    return res.json({ message: "Eliminado" });
+  } catch (error) {
+    console.error("❌ removeSavedProvider error:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
+*/}
+
+const removeSavedProvider = async (req, res) => {
+  try {
+    const { id, providerId } = req.params;
+
+    console.log(
+      `ℹ️ Received request to remove provider ${providerId} for user ${id}`
+    );
+
+    const user = await User.findByPk(id);
+    if (!user) {
+      console.log(`❌ User ${id} not found`);
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    console.log("ℹ️ Current saved:", user.saved);
+
+    // Parsear 'saved' soportando JSON ("[1,2]") o "1,2"
+    const raw = user.saved;
+    let current =
+      typeof raw === "string" && raw.trim().startsWith("[")
+        ? (() => {
+            try {
+              return JSON.parse(raw);
+            } catch {
+              return [];
+            }
+          })()
+        : typeof raw === "string" && raw.trim().length
+        ? raw
+            .split(",")
+            .map((t) => Number(t.trim()))
+            .filter((n) => Number.isFinite(n))
+        : Array.isArray(raw)
+        ? raw
+        : [];
+
+    const pid = Number(providerId);
+    const next = current.filter((n) => Number(n) !== pid);
+
+    if (next.length === current.length) {
+      console.log("⚠️ Provider not found in saved");
+      return res
+        .status(404)
+        .json({ message: "Proveedor no encontrado en guardados" });
+    }
+
+    await user.update({ saved: JSON.stringify(next) });
     console.log("✅ Saved updated successfully");
 
     return res.json({ message: "Eliminado" });
