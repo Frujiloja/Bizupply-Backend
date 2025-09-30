@@ -4,6 +4,8 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { Op } = require("sequelize");
 
+{
+  /*
 const getSavedProviders = async (req, res) => {
   try {
     const { id } = req.params;
@@ -29,33 +31,56 @@ const getSavedProviders = async (req, res) => {
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
-{
-  /*
+*/
+}
+// controllers/userControllers.js
 
-const addSavedProvider = async (req, res) => {
+const getSavedProviders = async (req, res) => {
   try {
-    const { id } = req.params; // user id
-    const { providerId } = req.body;
-    if (!providerId) return res.status(400).json({ message: "providerId requerido" });
+    const { id } = req.params;
 
     const user = await User.findByPk(id);
-    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
-
-    const current = Array.isArray(user.saved_provider_ids) ? user.saved_provider_ids : [];
-    if (!current.includes(providerId)) {
-      current.push(providerId);
-      await user.update({ saved_provider_ids: current });
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
     }
-    return res.status(201).json({ message: "Guardado" });
+
+    // Parsear 'saved' desde TEXT: soporta JSON ("[]"/"[1,2]") o listas "1,2"
+    const raw = user.saved;
+    let saved = [];
+    if (Array.isArray(raw)) {
+      saved = raw;
+    } else if (typeof raw === "string") {
+      const s = raw.trim();
+      if (s.startsWith("[")) {
+        try {
+          saved = JSON.parse(s);
+        } catch {
+          saved = [];
+        }
+      } else if (s.length) {
+        saved = s.split(",").map((t) => Number(t.trim()));
+      }
+    }
+
+    const ids = saved.map(Number).filter((n) => Number.isFinite(n));
+
+    if (ids.length === 0) {
+      return res.json([]);
+    }
+
+    const providers = await Provider.findAll({
+      where: { id: { [Op.in]: ids } },
+    });
+
+    res.json(providers);
   } catch (error) {
-    console.error("addSaveProvider error:", error);
+    console.error("❌ getSavedProviders error:", error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
 
-*/
-}
-
+{
+  /*
 const addSavedProvider = async (req, res) => {
   try {
     const { id } = req.params; // ID del usuario
@@ -104,7 +129,60 @@ const addSavedProvider = async (req, res) => {
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
+*/
+}
+// controllers/userControllers.js
 
+const addSavedProvider = async (req, res) => {
+  try {
+    const { id } = req.params; // ID del usuario
+    let { providerId } = req.body;
+
+    if (providerId == null) {
+      return res.status(400).json({ message: "providerId requerido" });
+    }
+
+    providerId = Number(providerId);
+    if (!Number.isFinite(providerId)) {
+      return res.status(400).json({ message: "providerId inválido" });
+    }
+
+    const user = await User.findByPk(id);
+    if (!user) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
+    }
+
+    // Convertir 'saved' a array (soporta JSON o "1,2")
+    const raw = user.saved;
+    const current =
+      typeof raw === "string" && raw.trim().startsWith("[")
+        ? (() => {
+            try {
+              return JSON.parse(raw);
+            } catch {
+              return [];
+            }
+          })()
+        : typeof raw === "string" && raw.trim().length
+        ? raw
+            .split(",")
+            .map((t) => Number(t.trim()))
+            .filter((n) => Number.isFinite(n))
+        : Array.isArray(raw)
+        ? raw
+        : [];
+
+    if (!current.includes(providerId)) {
+      const next = [...current, providerId];
+      await user.update({ saved: JSON.stringify(next) });
+    }
+
+    return res.status(201).json({ message: "Guardado" });
+  } catch (error) {
+    console.error("❌ addSavedProvider error:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
+  }
+};
 {
   /*
 const removeSavedProvider = async (req, res) => {
@@ -226,21 +304,21 @@ const createUser = async (req, res, next) => {
   )
     return res.status(400).send({ message: "fields can not be empty" });
 
-    try {
-      // Crear el nuevo usuario
-      const userCreated = await User.create({
-        first_name,
-        last_name,
-        email,
-        address: address || "",
-        phone: phone || "",
-        role: role || "client",
-        profile_image: profile_image || null,
-        auth0_id: auth0_id,
-        provider_id: null,
-        // saved_provider_ids: []  // <-- remove this line so it’s not sent
-        saved: "[]",
-      });
+  try {
+    // Crear el nuevo usuario
+    const userCreated = await User.create({
+      first_name,
+      last_name,
+      email,
+      address: address || "",
+      phone: phone || "",
+      role: role || "client",
+      profile_image: profile_image || null,
+      auth0_id: auth0_id,
+      provider_id: null,
+      // saved_provider_ids: []  // <-- remove this line so it’s not sent
+      saved: "[]",
+    });
 
     console.log("User creado correctamente:", userCreated);
 
